@@ -1,0 +1,203 @@
+% ============================================================================
+%  Candidate resume template (classic single-column serif layout)
+%  Engine: Tectonic   (run: tectonic resume_template.tex)
+%  Style:  Single-page, classic serif. Black bold serif section headers (title
+%          case) with thin rule. One-line italic tagline under contact info.
+%          Bold inline emphasis on key technologies. Modeled on a classic
+%          single-column serif resume layout.
+%
+%  This file is a TEMPLATE. The resume-tailor-no-hallucination skill copies
+%  it to outputs/<company>_<role>_<date>/tailored_resume.tex and fills in
+%  the content blocks marked with %% TAILOR: ... below.
+%  Every fact must come from career_truth/source_of_truth.{md,json}.
+%  Always compile to verify 1 page before declaring done.
+% ============================================================================
+
+\documentclass[letterpaper,10pt]{article}
+
+\usepackage[margin=0.5in]{geometry}  % 0.5in default for 1-page fit; widen to 0.6in only if content is sparse
+
+% --- FONT STACK (ATS text-extraction hardening) ---
+% Was: fontenc[T1] + lmodern (Type1). Two extraction bugs found empirically:
+%  1. LIGATURES: "workflows"/"staff"/"certifications" extracted as Unicode
+%     presentation forms (U+FB00-FB02) -- exact-string ATS keyword matchers
+%     miss those tokens. Ligatures=NoCommon kills fi/fl/ff ligation entirely.
+%  2. KERN SPLITS: OTF kern pairs at heading size ("Ta" in "Taylor") extract
+%     with a spurious space ("T aylor") in pypdf-class extractors. Kerning=Off
+%     eliminates it.
+% Visual cost at 10pt is negligible; extraction fidelity is the priority.
+% Gate: every render must pass the text-extraction check in
+% latex-to-pdf-renderer (no U+FB00-FB06, no U+FFFD, name/email/keywords survive).
+\usepackage{fontspec}
+\setmainfont{lmroman10-regular.otf}[
+  BoldFont=lmroman10-bold.otf,
+  ItalicFont=lmroman10-italic.otf,
+  BoldItalicFont=lmroman10-bolditalic.otf,
+  Ligatures=NoCommon,
+  Kerning=Off
+]
+\usepackage{microtype}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+% --- Robust Unicode punctuation under Tectonic (XeTeX) + legacy T1/lmodern fonts ---
+% Raw Unicode symbols in tailored content would otherwise land in wrong T1 font
+% slots and render as garbage -- e.g. a literal middle-dot "·" (U+00B7) prints as
+% a u-with-accent glyph. Map the symbols the tailor commonly emits to the correct
+% LaTeX commands so content can safely contain them. Extend this list if a new
+% symbol ever renders wrong. (Fixes the "·-renders-as-u-with-accent" bug.)
+\usepackage{newunicodechar}
+\newunicodechar{·}{\textperiodcentered}
+\newunicodechar{–}{\textendash}
+\newunicodechar{—}{\textemdash}
+\newunicodechar{•}{\textbullet}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{…}{\ldots}
+
+\hypersetup{
+  colorlinks=true,
+  urlcolor=black,
+  linkcolor=black,
+  pdfborder={0 0 0}
+}
+
+\pagenumbering{gobble}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+% Prevent LaTeX from hyphenating proper-noun technologies across line breaks.
+% Mid-word breaks like "Mon-goDB" or "Type-Script" look broken on a resume and
+% can also confuse ATS scanners. Extend this list when adding new tech terms.
+% LaTeX \hyphenation only accepts plain letters/digits (no dots, no slashes,
+% no embedded hyphens). Tokens containing those characters (Node.js, Next.js,
+% Material-UI, HTML/CSS) cannot be listed here -- wrap them in \mbox{...} at
+% the use site if they ever start breaking across lines.
+\hyphenation{
+  MongoDB PostgreSQL MySQL Redis SQLite DynamoDB
+  TypeScript JavaScript React Vue Svelte Angular
+  FastAPI SQLAlchemy GraphQL REST
+  Python Java Kotlin Swift Rust Golang
+  Tailwind Bootstrap shadcn
+  GitHub GitLab Bitbucket Trello Jira Notion Slack
+  Docker Kubernetes Tectonic Vercel Netlify Koyeb Railway Heroku
+  AWS GCP Azure CloudFront Lambda
+  Hibernate Gradle Maven JUnit Pytest Jest Cypress
+  JetBrains IntelliJ VSCode WebStorm PyCharm
+  Anthropic OpenAI Claude ChatGPT LangChain
+  NumPy Pandas TensorFlow PyTorch SciPy
+  HTML CSS SCSS Sass JSON YAML XML
+  HTTPS HMAC SHA HSTS CSRF JWT OAuth
+}
+
+% ============================================================================
+%  SPACING CONTRACT -- LOCKED. Read before touching anything below.
+%  ----------------------------------------------------------------------------
+%  These vertical-spacing values are the SINGLE SOURCE OF TRUTH for the resume's
+%  rhythm. They are deliberately POSITIVE and UNIFORM so every section and bullet
+%  gets the same breathing room and lines never collide. They were validated to
+%  produce a clean, legible 1-page resume (~51 content lines, page_metrics PASS).
+%
+%  HARD RULES (enforced by resume-tailor / latex-to-pdf-renderer / output-packager):
+%   1. NEVER reduce these values to force a 1-page fit. NEVER use negative or
+%      sub-1pt itemsep/parsep/topsep, and NEVER shrink the margin below 0.5in or
+%      the font below 10pt. Crushed/negative spacing is what makes lines overlap
+%      and the page look squished -- the exact regression this contract prevents.
+%   2. The ONLY lever for a >1-page overflow is trimming CONTENT: drop the weakest
+%      bullet or project, then tighten wording (~22 words/bullet). Re-measure with
+%      page_metrics.py and repeat. Fit the content to the spacing, never the
+%      spacing to the content.
+%   3. To FILL a sparse page, ADD truthful content (see tailor step 12) -- do not
+%      inflate spacing or font either.
+%  Any agent that edits the four values below to hit a page target is in breach.
+% ============================================================================
+
+% Section header: bold serif, title case, thin rule beneath
+\titleformat{\section}
+  {\normalfont\bfseries\large}
+  {}{0pt}{}[\vspace{1pt}\titlerule]
+\titlespacing*{\section}{0pt}{5pt}{2pt}   % LOCKED -- see SPACING CONTRACT above
+
+\newlist{tightitemize}{itemize}{1}
+\setlist[tightitemize]{
+  leftmargin=1.2em,
+  itemsep=1.5pt,    % LOCKED -- positive & uniform; never negative, never < 1pt
+  parsep=0pt,
+  topsep=1.5pt,     % LOCKED -- see SPACING CONTRACT above
+  partopsep=0pt,
+  label=\textbullet
+}
+
+% Role/project header: bold left content + right-aligned dates on ONE line.
+% If the left content wraps, trim it (don't widen the page).
+\newcommand{\rolerow}[2]{%
+  \noindent#1\hfill #2\par
+}
+
+\begin{document}
+
+% ---------- HEADER ----------
+\begin{center}
+  {\Huge\textbf{%% TAILOR: full name %%}}\\[3pt]
+  \href{mailto:%% TAILOR: email %%}{%% TAILOR: email %%} \,\textbar\, %% TAILOR: phone %% \,\textbar\, \href{https://%% TAILOR: github url %%}{%% TAILOR: github url %%} \,\textbar\, \href{https://%% TAILOR: linkedin url %%}{%% TAILOR: linkedin url %%}\\[1pt]
+  \textit{%% TAILOR: one-line professional tagline grounded in truth-DB evidence -- describe the kind of developer the candidate honestly is, no aspirational claims, no buzzwords %%}
+\end{center}
+
+% ---------- EDUCATION ----------
+\section*{Education}
+\rolerow{\textbf{%% TAILOR: degree %%}, %% TAILOR: school %%, %% TAILOR: school location %%}{%% TAILOR: degree dates %%}
+\begin{tightitemize}
+  \item \textbf{Relevant Courses}: %% TAILOR: posting-aligned coursework, comma-separated %%
+  \item \textbf{Certifications}: %% TAILOR: relevant certifications with issuer and year %%
+\end{tightitemize}
+
+% ---------- WORK EXPERIENCE (above Projects -- always) ----------
+\section*{Work Experience}
+%% TAILOR: repeat this block per real-world role. Skip the section entirely if no roles exist. %%
+\rolerow{\textbf{%% TAILOR: role title %%}, %% TAILOR: company %%, %% TAILOR: location %%}{%% TAILOR: role dates %%}
+\begin{tightitemize}
+  \item %% TAILOR: bullet 1 -- evidence-backed; bold key tech terms inline (e.g., \textbf{Next.js}). Target ~22 words. %%
+  \item %% TAILOR: bullet 2 %%
+  \item %% TAILOR: bullet 3 %%
+  \item %% TAILOR: bullet 4 (optional) %%
+\end{tightitemize}
+
+% ---------- PROJECTS ----------
+\section*{Projects}
+
+%% TAILOR: repeat per major project. 3 bullets per project minimum (4 if loaded). Order = posting-relevance. %%
+% Link anchor text must be the LITERAL short URL, never a word like "GitHub" --
+% GitHub-aware LLM screeners (HackerRank hiring-agent class) extract the URL from
+% the PDF *text layer*; an anchor reading "GitHub" gives them nothing to follow.
+\rolerow{\textbf{%% TAILOR: project name %%}, %% TAILOR: role/context %%, \href{https://%% TAILOR: github url %%}{%% TAILOR: github url (same, as visible anchor text) %%}%% TAILOR: optional " \,\textbar\, \href{https://<live url>}{<live url as visible text>}" %%}{%% TAILOR: project dates %%}
+\begin{tightitemize}
+  \item %% TAILOR: bullet 1 -- evidence-backed, bold key tech, ~22 words %%
+  \item %% TAILOR: bullet 2 %%
+  \item %% TAILOR: bullet 3 %%
+\end{tightitemize}
+
+% ---------- ONE-LINER PROJECTS (optional) ----------
+%% TAILOR: for smaller projects that surface a keyword adjacency without a full block, use a single bold-name + colon + sentence. Example:
+%% \noindent\textbf{ESP32-C3 Embedded LED Firmware}: Programmed firmware for an ESP32-C3 board controlling WS2812 LEDs in \textbf{C} and \textbf{RISC-V Assembly} with \textbf{FreeRTOS}.
+
+% ---------- TECHNICAL KNOWLEDGE (near bottom -- ALWAYS below Projects) ----------
+\section*{Technical Knowledge}
+\begin{tightitemize}
+  \item \textbf{Programming}: %% TAILOR: programming languages, bold the 1-2 posting-priority ones %%
+  \item \textbf{Frameworks}: %% TAILOR: frameworks \& libraries, bold the posting-priority ones %%
+  \item \textbf{Tools}: %% TAILOR: dev tools (Git, Docker, CI), bold the posting-priority ones %%
+  \item \textbf{Platforms}: %% TAILOR: cloud / hosting / OS platforms, bold the posting-priority ones %%
+\end{tightitemize}
+
+% ---------- ADDITIONAL INFORMATION ----------
+\section*{Additional Information}
+\begin{tightitemize}
+  \item \textbf{Languages}: %% TAILOR: spoken languages, verbatim from the truth DB (e.g., English (Native), French (Fluent)) %%
+  %% TAILOR: optional second bullet -- Concepts row, Strengths, or other. Skip if page is tight. %%
+\end{tightitemize}
+
+\end{document}
