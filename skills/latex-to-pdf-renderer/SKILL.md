@@ -42,7 +42,7 @@ If any check fails, STOP and report the failing check. Do not partially render.
    ```bash
    python3 scripts/extraction_check.py <file>.pdf \
      --expect "<full name>" --expect "<email>" --expect "<phone>" \
-     --expect "<github profile url>" --expect "<one bolded keyword per section, e.g. the top matched ATS keyword>"
+     --expect "<github profile url>" --expect "<one key keyword per section, e.g. the top matched ATS keyword>"
    ```
    Pull the expected strings from the `.tex` header block and the keyword map. The script fails on: ligature presentation forms (U+FB00–U+FB06 — fi/fl/ff ligation that breaks exact-string keyword matching), U+FFFD mojibake, or any expected string missing from extraction (catches kern-split tokens like "T aylor"). On FAIL: treat exactly like a `page_count > 1` failure — do not hand the PDF forward; the fix belongs in the template's font stack or `newunicodechar` table, never in this skill. (This gate is why the template pins `fontspec` with `Ligatures=NoCommon, Kerning=Off` — see the FONT STACK comment in `templates/resume_template.tex`.)
 6. On failure: print the last ~30 lines of the Tectonic output, identify the likely cause (missing package, bad escape, unbalanced braces), and do NOT retry blindly — surface to the user.

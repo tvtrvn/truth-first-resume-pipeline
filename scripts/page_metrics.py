@@ -1,28 +1,43 @@
 #!/usr/bin/env python3
-"""Report page count + last-page line density + verdict for a PDF.
+"""Report page count + how full the last page is + verdict for a PDF.
 
 Usage:
     python3 page_metrics.py <path-to-pdf>
 
 Output (stdout): single JSON line with:
     page_count        — total page count
-    last_page_lines   — non-empty line count on the last page
-    verdict           — PASS (>=50) | BORDERLINE (45-49) | DEAD-SPACE (<45)
+    last_page_fill    — how far down the text area the last baseline sits (0-1)
+    last_page_lines   — non-empty line count on the last page (informational)
+    verdict           — PASS (fill >= 0.93) | BORDERLINE (0.85-0.93) | DEAD-SPACE (< 0.85)
 
-Geometry constants assume the resume template (10pt / 0.5in margins, the
-LOCKED spacing contract: titlespacing 5/2pt, itemsep/topsep 1.5pt), where a
-full page holds ~52-56 non-empty content lines. The >=50 floor and the 1-page
-ceiling therefore leave a narrow band -- fit by trimming CONTENT, never by
-shrinking spacing/margins/font (see the SPACING CONTRACT in resume_template.tex).
+Fill is measured, not line count: since 2026-10-11 entries carry two-line headers and a gap
+before each one, so a full page holds a different number of lines depending on how many
+entries it has. Geometry: letter paper, 0.5in margins (the résumé template). PASS leaves at
+most ~50pt (about 4 text lines) empty at the bottom — the same slack the old ">= 50 of ~54
+lines" floor allowed. Fit by trimming or adding CONTENT, never by changing spacing/margins/font
+(see the SPACING CONTRACT in resume_template.tex).
 """
 import json
 import sys
 
 from pypdf import PdfReader
 
-FULL_PAGE = 50          # >= this = acceptable density
-BORDERLINE_LOW = 45     # 45-49 = borderline (recommend one filler)
+MARGIN = 36.0           # 0.5in in PDF points
+FULL_PAGE = 0.93        # >= this = acceptable fill
+BORDERLINE_LOW = 0.85   # 0.85-0.93 = borderline (recommend one filler)
 # < BORDERLINE_LOW       = dead space (must add content)
+
+
+def lowest_baseline(page) -> float:
+    """Smallest y (PDF points from the page bottom) of any visible text on the page."""
+    ys = []
+
+    def visit(text, cm, tm, _font, _size):
+        if text.strip():
+            ys.append(cm[1] * tm[4] + cm[3] * tm[5] + cm[5])
+
+    page.extract_text(visitor_text=visit)
+    return min(ys) if ys else float(page.mediabox.top)
 
 
 def main() -> int:
@@ -37,20 +52,24 @@ def main() -> int:
         print(json.dumps({"error": f"could not read PDF: {exc}"}), file=sys.stderr)
         return 1
 
-    last_text = pages[-1].extract_text() or ""
-    last_lines = [line for line in last_text.split("\n") if line.strip()]
-    n = len(last_lines)
+    last = pages[-1]
+    height = float(last.mediabox.top) - float(last.mediabox.bottom)
+    text_top = height - MARGIN
+    fill = (text_top - lowest_baseline(last)) / (height - 2 * MARGIN)
+    fill = round(max(0.0, min(1.0, fill)), 3)
+    lines = [line for line in (last.extract_text() or "").split("\n") if line.strip()]
 
-    if n >= FULL_PAGE:
+    if fill >= FULL_PAGE:
         verdict = "PASS"
-    elif n >= BORDERLINE_LOW:
+    elif fill >= BORDERLINE_LOW:
         verdict = "BORDERLINE"
     else:
         verdict = "DEAD-SPACE"
 
     print(json.dumps({
         "page_count": len(pages),
-        "last_page_lines": n,
+        "last_page_fill": fill,
+        "last_page_lines": len(lines),
         "verdict": verdict,
     }))
     return 0

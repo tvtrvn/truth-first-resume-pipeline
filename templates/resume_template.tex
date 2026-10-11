@@ -3,8 +3,8 @@
 %  Engine: Tectonic   (run: tectonic resume_template.tex)
 %  Style:  Single-page, classic serif. Black bold serif section headers (title
 %          case) with thin rule. One-line italic tagline under contact info.
-%          Bold inline emphasis on key technologies. Modeled on a classic
-%          single-column serif resume layout.
+%          Two-line entry headers with a gap before every entry; plain bullets
+%          (no inline bold) so each job and project reads as its own block.
 %
 %  This file is a TEMPLATE. The resume-tailor-no-hallucination skill copies
 %  it to outputs/<company>_<role>_<date>/tailored_resume.tex and fills in
@@ -15,7 +15,7 @@
 
 \documentclass[letterpaper,10pt]{article}
 
-\usepackage[margin=0.5in]{geometry}  % 0.5in default for 1-page fit; widen to 0.6in only if content is sparse
+\usepackage[margin=0.5in]{geometry}  % LOCKED at 0.5in (page_metrics.py measures fill against this margin)
 
 % --- FONT STACK (ATS text-extraction hardening) ---
 % Was: fontenc[T1] + lmodern (Type1). Two extraction bugs found empirically:
@@ -99,8 +99,13 @@
 %  ----------------------------------------------------------------------------
 %  These vertical-spacing values are the SINGLE SOURCE OF TRUTH for the resume's
 %  rhythm. They are deliberately POSITIVE and UNIFORM so every section and bullet
-%  gets the same breathing room and lines never collide. They were validated to
-%  produce a clean, legible 1-page resume (~51 content lines, page_metrics PASS).
+%  gets the same breathing room and lines never collide.
+%  REVISED 2026-10-11 after feedback that the page looked crammed and jobs were
+%  hard to tell apart: section titles 8pt/3pt; a 6pt gap before every entry
+%  (\entry / \rolerow below); jobs and education get a two-line header (bold
+%  organisation, plain location, then italic title + dates); projects keep one line.
+%  Bold ONLY in headers and row labels -- never inside a bullet. A full page ends
+%  at page_metrics last_page_fill >= 0.93 (fill, not a line count).
 %
 %  HARD RULES (enforced by resume-tailor / latex-to-pdf-renderer / output-packager):
 %   1. NEVER reduce these values to force a 1-page fit. NEVER use negative or
@@ -113,14 +118,15 @@
 %      spacing to the content.
 %   3. To FILL a sparse page, ADD truthful content (see tailor step 12) -- do not
 %      inflate spacing or font either.
-%  Any agent that edits the four values below to hit a page target is in breach.
+%  Any agent that edits the values or the \entry / \rolerow macros below to hit a
+%  page target is in breach.
 % ============================================================================
 
 % Section header: bold serif, title case, thin rule beneath
 \titleformat{\section}
   {\normalfont\bfseries\large}
   {}{0pt}{}[\vspace{1pt}\titlerule]
-\titlespacing*{\section}{0pt}{5pt}{2pt}   % LOCKED -- see SPACING CONTRACT above
+\titlespacing*{\section}{0pt}{8pt}{3pt}   % LOCKED -- see SPACING CONTRACT above
 
 \newlist{tightitemize}{itemize}{1}
 \setlist[tightitemize]{
@@ -132,10 +138,16 @@
   label=\textbullet
 }
 
-% Role/project header: bold left content + right-aligned dates on ONE line.
-% If the left content wraps, trim it (don't widen the page).
+% Entry headers -- LOCKED (layout rule 2026-10-11). A 6pt gap before every entry.
+% Jobs + education: \entry{Organisation}{Location}{Title}{Dates} (two lines).
+% Links in the organisation field go inside \textnormal{...} so they are not bold.
+\newcommand{\entry}[4]{%
+  \par\addvspace{6pt}\noindent\textbf{#1}\hfill #2\par\nopagebreak
+  \noindent\textit{#3}\hfill\textit{#4}\par\nopagebreak
+}
+% Projects: \rolerow{\textbf{Name}, links}{Dates} (one line). If it wraps, trim it.
 \newcommand{\rolerow}[2]{%
-  \noindent#1\hfill #2\par
+  \par\addvspace{6pt}\noindent#1\hfill\textit{#2}\par\nopagebreak
 }
 
 \begin{document}
@@ -149,7 +161,7 @@
 
 % ---------- EDUCATION ----------
 \section*{Education}
-\rolerow{\textbf{%% TAILOR: degree %%}, %% TAILOR: school %%, %% TAILOR: school location %%}{%% TAILOR: degree dates %%}
+\entry{%% TAILOR: school %%}{%% TAILOR: school location %%}{%% TAILOR: degree %%}{%% TAILOR: degree dates %%}
 \begin{tightitemize}
   \item \textbf{Relevant Courses}: %% TAILOR: posting-aligned coursework, comma-separated %%
   \item \textbf{Certifications}: %% TAILOR: relevant certifications with issuer and year %%
@@ -158,9 +170,9 @@
 % ---------- WORK EXPERIENCE (above Projects -- always) ----------
 \section*{Work Experience}
 %% TAILOR: repeat this block per real-world role. Skip the section entirely if no roles exist. %%
-\rolerow{\textbf{%% TAILOR: role title %%}, %% TAILOR: company %%, %% TAILOR: location %%}{%% TAILOR: role dates %%}
+\entry{%% TAILOR: company %%}{%% TAILOR: location %%}{%% TAILOR: role title %%}{%% TAILOR: role dates %%}
 \begin{tightitemize}
-  \item %% TAILOR: bullet 1 -- evidence-backed; bold key tech terms inline (e.g., \textbf{Next.js}). Target ~22 words. %%
+  \item %% TAILOR: bullet 1 -- evidence-backed; plain text, NO bold inside bullets. Target ~22 words. %%
   \item %% TAILOR: bullet 2 %%
   \item %% TAILOR: bullet 3 %%
   \item %% TAILOR: bullet 4 (optional) %%
@@ -175,22 +187,22 @@
 % the PDF *text layer*; an anchor reading "GitHub" gives them nothing to follow.
 \rolerow{\textbf{%% TAILOR: project name %%}, %% TAILOR: role/context %%, \href{https://%% TAILOR: github url %%}{%% TAILOR: github url (same, as visible anchor text) %%}%% TAILOR: optional " \,\textbar\, \href{https://<live url>}{<live url as visible text>}" %%}{%% TAILOR: project dates %%}
 \begin{tightitemize}
-  \item %% TAILOR: bullet 1 -- evidence-backed, bold key tech, ~22 words %%
+  \item %% TAILOR: bullet 1 -- evidence-backed, plain text (no bold), ~22 words %%
   \item %% TAILOR: bullet 2 %%
   \item %% TAILOR: bullet 3 %%
 \end{tightitemize}
 
 % ---------- ONE-LINER PROJECTS (optional) ----------
 %% TAILOR: for smaller projects that surface a keyword adjacency without a full block, use a single bold-name + colon + sentence. Example:
-%% \noindent\textbf{ESP32-C3 Embedded LED Firmware}: Programmed firmware for an ESP32-C3 board controlling WS2812 LEDs in \textbf{C} and \textbf{RISC-V Assembly} with \textbf{FreeRTOS}.
+%% \noindent\textbf{ESP32-C3 Embedded LED Firmware}: Programmed firmware for an ESP32-C3 board controlling WS2812 LEDs in C and RISC-V Assembly with FreeRTOS.
 
 % ---------- TECHNICAL KNOWLEDGE (near bottom -- ALWAYS below Projects) ----------
 \section*{Technical Knowledge}
 \begin{tightitemize}
-  \item \textbf{Programming}: %% TAILOR: programming languages, bold the 1-2 posting-priority ones %%
-  \item \textbf{Frameworks}: %% TAILOR: frameworks \& libraries, bold the posting-priority ones %%
-  \item \textbf{Tools}: %% TAILOR: dev tools (Git, Docker, CI), bold the posting-priority ones %%
-  \item \textbf{Platforms}: %% TAILOR: cloud / hosting / OS platforms, bold the posting-priority ones %%
+  \item \textbf{Programming}: %% TAILOR: programming languages, posting-priority ones first %%
+  \item \textbf{Frameworks}: %% TAILOR: frameworks \& libraries, posting-priority ones first %%
+  \item \textbf{Tools}: %% TAILOR: dev tools (Git, Docker, CI), posting-priority ones first %%
+  \item \textbf{Platforms}: %% TAILOR: cloud / hosting / OS platforms, posting-priority ones first %%
 \end{tightitemize}
 
 % ---------- ADDITIONAL INFORMATION ----------

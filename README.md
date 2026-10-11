@@ -63,7 +63,7 @@ A gate that never says no is decoration. This one says no, and the demo proves i
                           ▼
         [6 renderer]  Tectonic → PDF                      (Haiku)
            blocked by two machine gates:
-           • page geometry (exactly 1 page blocks; a ≥50-line density check warns)
+           • page geometry (exactly 1 page blocks; a page-fill check warns)
            • text-extraction gate: no ligature glyphs, no mojibake,
              name/email/keywords must survive extraction verbatim
                           ▼
@@ -160,7 +160,7 @@ and the human as the accountable architect is not a disclaimer; it is the design
 
 ## What changed since this snapshot (October 2026)
 
-The files here are the July 2026 snapshot. The private pipeline has kept evolving; the
+The files here are the July 2026 snapshot, except the layout revision below. The private pipeline has kept evolving; the
 mechanism is the same, the gates are stricter:
 
 - **14 skills** in the live pipeline; the 9 core ones of the tailoring chain are published here.
@@ -178,6 +178,12 @@ mechanism is the same, the gates are stricter:
 - **More gates before packaging:** every link on the resume is HTTP-checked, the PDF size is
   capped for applicant-tracking parsers, and a posting's rules on candidates' AI use are
   surfaced to the person before they apply.
+- **Layout revision (updated here 2026-10-11).** The page read as crammed and jobs were hard to
+  tell apart, so the template now gives jobs and education a two-line header (bold organisation,
+  italic title and dates), puts a gap before every entry, and keeps bullets plain (bold only in
+  headers and row labels). The page-fill gate now measures how far down the page the text reaches instead of
+  counting lines, with its own tests (`scripts/test_page_metrics.py`). The template, that script
+  and the tailor, renderer and auditor skills in this repo carry the change.
 
 ## Repo map
 
